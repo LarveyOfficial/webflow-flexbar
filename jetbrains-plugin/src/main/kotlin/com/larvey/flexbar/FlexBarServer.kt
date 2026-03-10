@@ -10,16 +10,18 @@ import java.util.concurrent.Executors
 object FlexBarServer {
 
     private val LOG = Logger.getInstance(FlexBarServer::class.java)
-    const val PORT = 7123
 
     @Volatile private var started = false
     private var server: HttpServer? = null
 
+    private fun currentPort() = FlexBarSettings.getInstance().port
+
     @Synchronized
     fun startIfNeeded() {
         if (started) return
+        val port = currentPort()
         try {
-            server = HttpServer.create(InetSocketAddress("127.0.0.1", PORT), 16).apply {
+            server = HttpServer.create(InetSocketAddress("127.0.0.1", port), 16).apply {
                 // Actions — POST, optional ?config= query param
                 createContext("/run")   { ex -> handlePost(ex) { ActionExecutor.run(queryParam(ex, "config")) } }
                 createContext("/debug") { ex -> handlePost(ex) { ActionExecutor.debug(queryParam(ex, "config")) } }
@@ -31,21 +33,28 @@ object FlexBarServer {
                 createContext("/status")       { ex -> handleGet(ex) { ActionExecutor.status() } }
                 createContext("/configs")      { ex -> handleGet(ex) { ActionExecutor.configs() } }
                 createContext("/test-configs") { ex -> handleGet(ex) { ActionExecutor.testConfigs() } }
-                createContext("/ping")         { ex -> respond(ex, 200, mapOf("ok" to true, "port" to PORT)) }
+                createContext("/ping")         { ex -> respond(ex, 200, mapOf("ok" to true, "port" to port)) }
 
                 executor = Executors.newCachedThreadPool()
                 start()
             }
             started = true
-            LOG.info("FlexBar HTTP server listening on 127.0.0.1:$PORT")
+            LOG.info("FlexBar HTTP server listening on 127.0.0.1:$port")
             Runtime.getRuntime().addShutdownHook(Thread { stop() })
         } catch (e: Exception) {
-            LOG.error("FlexBar HTTP server failed to start on port $PORT", e)
+            LOG.error("FlexBar HTTP server failed to start on port $port", e)
         }
+    }
+
+    @Synchronized
+    fun restart() {
+        stop()
+        startIfNeeded()
     }
 
     fun stop() {
         server?.stop(0)
+        server = null
         started = false
     }
 

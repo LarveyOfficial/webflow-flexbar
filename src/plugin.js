@@ -2,18 +2,39 @@ const { plugin, logger } = require("@eniac/flexdesigner");
 const { exec } = require("child_process");
 const http = require("http");
 
+const DEFAULT_PORT = 7123;
+
 // uid -> { ...key, serialNumber }
 const liveKeys = {};
 let pluginConfig = {};
 
+// port -> { status: null|Object, branch: null|string }
+const portState = {};
+
+function getPortState(port) {
+  if (!portState[port]) portState[port] = { status: null, branch: null };
+  return portState[port];
+}
+
+function keyPort(key) {
+  const p = parseInt(key.data?.port, 10);
+  return p > 0 && p <= 65535 ? p : DEFAULT_PORT;
+}
+
+function activePorts() {
+  const ports = new Set();
+  for (const info of Object.values(liveKeys)) ports.add(keyPort(info));
+  return ports;
+}
+
 // ---------------------------------------------------------------------------
-// IDE HTTP API  (localhost:7123)
+// IDE HTTP API  (localhost:PORT)
 // ---------------------------------------------------------------------------
 
-function callIDE(path, method = "POST") {
+function callIDE(path, method = "POST", port = DEFAULT_PORT) {
   return new Promise((resolve) => {
     const req = http.request(
-      { hostname: "127.0.0.1", port: 7123, path, method, headers: { "Content-Length": "0" } },
+      { hostname: "127.0.0.1", port, path, method, headers: { "Content-Length": "0" } },
       (res) => {
         let body = "";
         res.on("data", (c) => (body += c));
@@ -30,8 +51,9 @@ function callIDE(path, method = "POST") {
 // Action dispatch — HTTP only
 // ---------------------------------------------------------------------------
 
-async function triggerAction(cid, keyData) {
-  const configName = keyData?.configName || null;
+async function triggerAction(cid, key) {
+  const port = keyPort(key);
+  const configName = key.data?.configName || null;
 
   const basePaths = {
     "com.larvey.jetbrains.run":   "/run",
@@ -44,10 +66,10 @@ async function triggerAction(cid, keyData) {
   if (!base) return;
 
   const path = configName ? `${base}?config=${encodeURIComponent(configName)}` : base;
-  const result = await callIDE(path, "POST");
+  const result = await callIDE(path, "POST", port);
 
   if (!result) {
-    logger.warn(`HTTP ${path} failed — companion plugin not running`);
+    logger.warn(`HTTP ${path} failed — companion plugin not running on port ${port}`);
   } else if (result.error) {
     logger.warn(`IDE error for ${path}:`, result.error);
   }
@@ -63,34 +85,36 @@ const stopWindows = {};
 const ACTION_CIDS = new Set(["com.larvey.jetbrains.run", "com.larvey.jetbrains.debug", "com.larvey.jetbrains.test"]);
 
 async function handleActionTap(cid, key) {
-  if (!cachedStatus) return; // companion plugin not running — do nothing
+  const port = keyPort(key);
+  const { status } = getPortState(port);
+  if (!status) return; // companion plugin not running — do nothing
 
   const uid = key.uid;
   const configName = key.data?.configName || null;
 
-  const base = { "com.larvey.jetbrains.run": "/run", "com.larvey.jetbrains.debug": "/debug", "com.larvey.jetbrains.test": "/test" }[cid];
+  const base = {
+    "com.larvey.jetbrains.run":   "/run",
+    "com.larvey.jetbrains.debug": "/debug",
+    "com.larvey.jetbrains.test":  "/test",
+  }[cid];
   const runPath = configName ? `${base}?config=${encodeURIComponent(configName)}` : base;
 
-  // Not running → start immediately, no stop window needed
   const isRunning = configName
-    ? (cachedStatus?.runningConfigs ?? []).includes(configName)
-    : (cachedStatus?.running ?? false);
+    ? (status.runningConfigs ?? []).includes(configName)
+    : (status.running ?? false);
 
   if (!isRunning) {
-    await callIDE(runPath, "POST");
-    setTimeout(pollStatus, 1500);
+    await callIDE(runPath, "POST", port);
+    setTimeout(() => pollPort(port).then(updateAllKeys), 1500);
     return;
   }
 
-  // Already running — second tap within 1s stops, otherwise restarts
   if (stopWindows[uid]) {
-    // Second tap → cancel pending restart, stop instead
     clearTimeout(stopWindows[uid].timer);
     delete stopWindows[uid];
-
     const stopPath = configName ? `/stop?config=${encodeURIComponent(configName)}` : "/stop";
-    await callIDE(stopPath, "POST");
-    setTimeout(pollStatus, 500);
+    await callIDE(stopPath, "POST", port);
+    setTimeout(() => pollPort(port).then(updateAllKeys), 500);
     return;
   }
 
@@ -109,8 +133,8 @@ async function handleActionTap(cid, key) {
   stopWindows[uid] = {
     timer: setTimeout(async () => {
       delete stopWindows[uid];
-      await callIDE(runPath, "POST");
-      setTimeout(pollStatus, 1500);
+      await callIDE(runPath, "POST", port);
+      setTimeout(() => pollPort(port).then(updateAllKeys), 1500);
     }, 1000),
   };
 }
@@ -130,21 +154,26 @@ function ellipsis(text, keyWidth) {
 // Status polling & key drawing
 // ---------------------------------------------------------------------------
 
-let cachedStatus = null;
-let cachedBranch = null;
+async function pollPort(port) {
+  const status = await callIDE("/status", "GET", port);
+  const ps = getPortState(port);
+  ps.status = status ?? null;
+  if (status?.branch) ps.branch = status.branch;
+}
 
-async function pollStatus() {
-  const status = await callIDE("/status", "GET");
-  cachedStatus = status ?? null;
-  if (status?.branch) cachedBranch = status.branch;
+async function pollAllPorts() {
+  const ports = activePorts();
+  if (ports.size === 0) return;
+  await Promise.all([...ports].map(pollPort));
   updateAllKeys();
 }
 
 function updateAllKeys() {
-  const connected = cachedStatus !== null;
-
   for (const info of Object.values(liveKeys)) {
     const sn = info.serialNumber;
+    const port = keyPort(info);
+    const { status, branch } = getPortState(port);
+    const connected = status !== null;
 
     // Run / Debug buttons
     if (info.cid === "com.larvey.jetbrains.run" || info.cid === "com.larvey.jetbrains.debug") {
@@ -154,13 +183,12 @@ function updateAllKeys() {
       }
       const configName = info.data?.configName || "";
       const isRunning  = configName
-        ? (cachedStatus.runningConfigs ?? []).includes(configName)
-        : (cachedStatus.running ?? false);
+        ? (status.runningConfigs ?? []).includes(configName)
+        : (status.running ?? false);
 
       const defaultLabel = info.cid === "com.larvey.jetbrains.debug" ? "Debug" : "Run";
       const icon  = isRunning ? "mdi mdi-restart" : (info.cid === "com.larvey.jetbrains.debug" ? "mdi mdi-bug" : "mdi mdi-play-circle");
       const label = configName ? ellipsis(configName, info.style.width) : defaultLabel;
-
       drawKey(sn, info, { icon, title: label });
     }
 
@@ -172,30 +200,30 @@ function updateAllKeys() {
       }
       const configName = info.data?.configName || "";
       const isRunning  = configName
-        ? (cachedStatus.runningConfigs ?? []).includes(configName)
+        ? (status.runningConfigs ?? []).includes(configName)
         : false;
 
       const icon  = isRunning ? "mdi mdi-restart" : "mdi mdi-test-tube";
       const label = configName ? ellipsis(configName, info.style.width) : "Test";
-
       drawKey(sn, info, { icon, title: label });
     }
 
     // Stop button — bright red when anything is running, dark when idle, grey when disconnected
     if (info.cid === "com.larvey.jetbrains.stop") {
-      const bgColor = !connected ? "#1a1a1a" : (cachedStatus.running ? "#e53935" : "#4a1010");
+      const bgColor = !connected ? "#1a1a1a" : (status.running ? "#e53935" : "#4a1010");
       drawKey(sn, info, { bgColor });
     }
 
-    // Build button — grey when disconnected
+    // Build button — grey when disconnected, restored when connected
     if (info.cid === "com.larvey.jetbrains.build") {
       if (!connected) drawKey(sn, info, { bgColor: "#1a1a1a" });
+      else drawKey(sn, info, {});
     }
 
-    // Branch key — always draws from cachedBranch (updated by poll or git fallback)
+    // Branch key — draws from per-port branch (updated by poll or git fallback)
     if (info.cid === "com.larvey.jetbrains.branch") {
-      const branch = cachedBranch || "no branch";
-      drawKey(sn, info, { showIcon: true, showTitle: true, title: ellipsis(branch, info.style.width) });
+      const branchName = branch || "no branch";
+      drawKey(sn, info, { showIcon: true, showTitle: true, title: ellipsis(branchName, info.style.width) });
     }
   }
 }
@@ -221,7 +249,12 @@ function getGitBranch(projectPath) {
 
 async function refreshBranchFallback() {
   const branch = await getGitBranch(pluginConfig.projectPath || null);
-  if (branch) cachedBranch = branch;
+  if (branch) {
+    for (const port of activePorts()) {
+      const ps = getPortState(port);
+      if (!ps.branch) ps.branch = branch;
+    }
+  }
   updateAllKeys();
 }
 
@@ -231,8 +264,10 @@ async function refreshBranchFallback() {
 
 plugin.on("plugin.config.updated", async (payload) => {
   pluginConfig = payload.config || {};
-  await pollStatus();
-  if (!cachedStatus) await refreshBranchFallback();
+  await pollAllPorts();
+  for (const port of activePorts()) {
+    if (!getPortState(port).status) { await refreshBranchFallback(); break; }
+  }
 });
 
 plugin.on("plugin.alive", async (payload) => {
@@ -240,8 +275,10 @@ plugin.on("plugin.alive", async (payload) => {
   logger.info("Alive:", serialNumber, keys.map((k) => k.cid));
   for (const key of keys) liveKeys[key.uid] = { ...key, serialNumber };
 
-  await pollStatus();
-  if (!cachedStatus) await refreshBranchFallback();
+  await pollAllPorts();
+  for (const port of activePorts()) {
+    if (!getPortState(port).status) { await refreshBranchFallback(); break; }
+  }
 });
 
 plugin.on("plugin.dead", (payload) => {
@@ -251,10 +288,13 @@ plugin.on("plugin.dead", (payload) => {
 plugin.on("plugin.data", async (payload) => {
   const { data } = payload;
   const { key } = data;
+  const port = keyPort(key);
 
   if (key.cid === "com.larvey.jetbrains.branch") {
-    await pollStatus();
-    if (!cachedStatus) await refreshBranchFallback();
+    await pollPort(port);
+    const ps = getPortState(port);
+    if (!ps.status) await refreshBranchFallback();
+    else updateAllKeys();
     return;
   }
 
@@ -263,16 +303,16 @@ plugin.on("plugin.data", async (payload) => {
     return;
   }
 
-  // Stop / Build — do nothing if companion plugin isn't running
-  if (!cachedStatus) return;
-  await triggerAction(key.cid, key.data);
-  setTimeout(pollStatus, 1500);
+  // Stop / Build — do nothing if companion plugin isn't running on this port
+  if (!getPortState(port).status) return;
+  await triggerAction(key.cid, key);
+  setTimeout(() => pollPort(port).then(updateAllKeys), 1500);
 });
 
 plugin.on("system.actwin", async (payload) => {
   const name = payload?.newWin?.owner?.name ?? "";
   if (name.toLowerCase().includes("webstorm")) {
-    await pollStatus();
+    await pollAllPorts();
   }
 });
 
@@ -282,4 +322,4 @@ plugin.on("system.actwin", async (payload) => {
 
 plugin.start();
 
-setInterval(pollStatus, 10_000);
+setInterval(pollAllPorts, 10_000);

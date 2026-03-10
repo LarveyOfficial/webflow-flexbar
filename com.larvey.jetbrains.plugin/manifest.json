@@ -1,7 +1,7 @@
 {
   "name": "JetBrains IDE",
   "uuid": "com.larvey.jetbrains",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": "Larvey",
   "entry": "backend/plugin.cjs",
   "description": "JetBrains IDE integration for FlexBar — run, debug, stop, build, test, and git branch display. Requires companion plugin.",
@@ -53,7 +53,7 @@
           "titlePos": { "X": 62, "Y": 50 },
           "foregroundOutline": true
         },
-        "data": { "configName": "" }
+        "data": { "configName": "", "port": 7123 }
       },
       {
         "title": "$Debug.Title",
@@ -77,7 +77,7 @@
           "titlePos": { "X": 62, "Y": 50 },
           "foregroundOutline": true
         },
-        "data": { "configName": "" }
+        "data": { "configName": "", "port": 7123 }
       },
       {
         "title": "$Stop.Title",
@@ -97,7 +97,7 @@
           "iconPos": { "X": 50, "Y": 50 },
           "foregroundOutline": true
         },
-        "data": {}
+        "data": { "port": 7123 }
       },
       {
         "title": "$Build.Title",
@@ -117,7 +117,7 @@
           "iconPos": { "X": 50, "Y": 50 },
           "foregroundOutline": true
         },
-        "data": {}
+        "data": { "port": 7123 }
       },
       {
         "title": "$Test.Title",
@@ -141,7 +141,7 @@
           "titlePos": { "X": 62, "Y": 50 },
           "foregroundOutline": true
         },
-        "data": { "configName": "" }
+        "data": { "configName": "", "port": 7123 }
       },
       {
         "title": "$Branch.Title",
@@ -165,7 +165,7 @@
           "titlePos": { "X": 62, "Y": 50 },
           "foregroundOutline": true
         },
-        "data": {}
+        "data": { "port": 7123 }
       }
     ]
   },
