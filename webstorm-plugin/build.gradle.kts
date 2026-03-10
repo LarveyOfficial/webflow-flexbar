@@ -19,8 +19,14 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        // Use the locally installed WebStorm — no downloading required.
-        local("/Applications/WebStorm.app")
+        // Use a locally installed WebStorm by default.
+        // Pass -PwsVersion=2024.3 to download a specific version instead (used in CI).
+        val wsVersion = providers.gradleProperty("wsVersion").orNull
+        if (wsVersion != null) {
+            webstorm(wsVersion)
+        } else {
+            local("/Applications/WebStorm.app")
+        }
         bundledPlugin("Git4Idea")
     }
 }
