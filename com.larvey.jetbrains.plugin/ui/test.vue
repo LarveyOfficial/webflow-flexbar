@@ -1,5 +1,25 @@
 <template>
   <v-container>
+    <v-row align="center" class="mb-1">
+      <v-col cols="8">
+        <v-text-field
+          v-model.number="modelValue.data.port"
+          label="Companion Port"
+          type="number"
+          min="1"
+          max="65535"
+          prepend-inner-icon="mdi-lan-connect"
+          hide-details
+          density="compact"
+        />
+      </v-col>
+      <v-col cols="4">
+        <v-btn block variant="tonal" :loading="loading" @click="checkAndReload">
+          Check
+        </v-btn>
+      </v-col>
+    </v-row>
+
     <v-row>
       <v-col cols="12">
         <v-select
@@ -7,7 +27,7 @@
           :items="configs"
           item-title="title"
           item-value="value"
-          :label="label"
+          label="Test Configuration"
           outlined
           hide-details="auto"
           :loading="loading"
@@ -16,9 +36,9 @@
         />
       </v-col>
 
-      <v-col v-if="!serverAvailable" cols="12">
+      <v-col v-if="!serverAvailable && !loading" cols="12">
         <v-alert type="warning" density="compact" variant="tonal" class="mt-2">
-          IDE companion plugin not reachable. Open your JetBrains IDE first, then reopen this panel.
+          IDE companion plugin not reachable on port {{ modelValue.data.port || 7123 }}.
         </v-alert>
       </v-col>
 
@@ -46,35 +66,31 @@ export default {
     };
   },
 
-  computed: {
-    // The manifest cid tells us whether this is a test key or a run/debug key.
-    isTestKey() {
-      return this.modelValue?.cid?.includes("test");
-    },
-    label() {
-      return this.isTestKey ? "Test Configuration" : "Run Configuration";
-    },
+  async mounted() {
+    if (!this.modelValue.data.port) this.modelValue.data.port = 7123;
+    await this.checkAndReload();
   },
 
-  async mounted() {
-    this.loading = true;
-    const endpoint = this.isTestKey
-      ? "http://127.0.0.1:7123/test-configs"
-      : "http://127.0.0.1:7123/configs";
-    try {
-      const res = await fetch(endpoint);
-      const data = await res.json();
-      const names = data.configs ?? [];
-      this.configs = [
-        { title: "Current configuration", value: "" },
-        ...names.map((n) => ({ title: n, value: n })),
-      ];
-      this.serverAvailable = true;
-    } catch {
-      this.serverAvailable = false;
-    } finally {
-      this.loading = false;
-    }
+  methods: {
+    async checkAndReload() {
+      this.loading = true;
+      const port = this.modelValue.data.port || 7123;
+      try {
+        const res = await fetch(`http://127.0.0.1:${port}/test-configs`);
+        const data = await res.json();
+        const names = data.configs ?? [];
+        this.configs = [
+          { title: "Current configuration", value: "" },
+          ...names.map((n) => ({ title: n, value: n })),
+        ];
+        this.serverAvailable = true;
+      } catch {
+        this.configs = [];
+        this.serverAvailable = false;
+      } finally {
+        this.loading = false;
+      }
+    },
   },
 };
 </script>

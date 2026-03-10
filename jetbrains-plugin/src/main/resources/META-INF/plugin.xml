@@ -12,6 +12,12 @@
     <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService serviceImplementation="com.larvey.flexbar.FlexBarSettings"/>
+        <applicationConfigurable
+            parentId="tools"
+            instance="com.larvey.flexbar.FlexBarConfigurable"
+            id="com.larvey.flexbar.settings"
+            displayName="FlexBar Integration"/>
         <postStartupActivity implementation="com.larvey.flexbar.FlexBarStartupActivity"/>
     </extensions>
 </idea-plugin>
