@@ -9,7 +9,7 @@ Two components that communicate over HTTP:
    - Connects to FlexDesigner via `@eniac/flexdesigner` WebSocket SDK
    - Calls `127.0.0.1:7123` (companion plugin); shows "Waiting for IDE" when unreachable
 
-2. **IDE companion plugin** (`webstorm-plugin/`)
+2. **IDE companion plugin** (`jetbrains-plugin/`)
    - Kotlin/IntelliJ Platform plugin
    - HTTP server on `127.0.0.1:7123`
    - Uses IntelliJ APIs to run/debug/stop/build and read git branch
@@ -21,9 +21,9 @@ Two components that communicate over HTTP:
 | `src/plugin.js` | FlexBar plugin source (Node.js) |
 | `com.larvey.jetbrains.plugin/manifest.json` | Plugin UUID `com.larvey.jetbrains`, key definitions |
 | `com.larvey.jetbrains.plugin/ui/global_config.vue` | Config panel (Vue 3 + Vuetify) |
-| `webstorm-plugin/build.gradle.kts` | Kotlin build — local WebStorm by default, `wsVersion` property for CI |
-| `webstorm-plugin/src/main/kotlin/com/larvey/flexbar/FlexBarServer.kt` | HTTP server |
-| `webstorm-plugin/src/main/kotlin/com/larvey/flexbar/ActionExecutor.kt` | IDE action execution |
+| `jetbrains-plugin/build.gradle.kts` | Kotlin build — local WebStorm by default, `wsVersion` property for CI |
+| `jetbrains-plugin/src/main/kotlin/com/larvey/flexbar/FlexBarServer.kt` | HTTP server |
+| `jetbrains-plugin/src/main/kotlin/com/larvey/flexbar/ActionExecutor.kt` | IDE action execution |
 | `rollup.config.mjs` | Bundles `src/plugin.js` → `com.larvey.jetbrains.plugin/backend/plugin.cjs` |
 | `.github/workflows/release.yml` | CI: builds both plugins and creates GitHub releases on version tags |
 
@@ -38,7 +38,7 @@ npm run plugin:pack    # package as com.larvey.jetbrains.flexplugin
 
 ### IDE companion plugin
 ```bash
-cd webstorm-plugin
+cd jetbrains-plugin
 ./gradlew buildPlugin                         # local (uses /Applications/WebStorm.app)
 ./gradlew buildPlugin -PwsVersion=2025.3 --no-configuration-cache  # CI (downloads WebStorm)
 # Output: build/distributions/jetbrains-flexbar-plugin-1.0.0.zip
@@ -61,7 +61,6 @@ The `wsVersion` Gradle property switches the build from `local("/Applications/We
 
 ## Notes
 
-- macOS only
 - Status polling interval: 10 seconds
 - Double-tap logic: tapping Run/Debug/Test while running shows "stop?" for 1s
 - Stop key turns bright red (`#e53935`) when any process is running

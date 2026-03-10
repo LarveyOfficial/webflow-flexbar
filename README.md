@@ -17,7 +17,7 @@ Node.js plugin (src/plugin.js)
      │
      │  HTTP to localhost:7123
      ▼
-IDE companion plugin (webstorm-plugin/)
+IDE companion plugin (jetbrains-plugin/)
      │
      │  IntelliJ Platform APIs
      ▼
@@ -28,7 +28,7 @@ JetBrains IDE
 
 A Node.js backend built with the `@eniac/flexdesigner` SDK. Communicates with FlexDesigner over WebSocket, polls the IDE companion plugin every 10 seconds, and updates key displays based on IDE state. Keys show **"Waiting for IDE"** when the companion plugin is unreachable.
 
-### IDE Companion Plugin (`webstorm-plugin/`)
+### IDE Companion Plugin (`jetbrains-plugin/`)
 
 A Kotlin/IntelliJ Platform plugin that exposes an HTTP server on `127.0.0.1:7123`. It uses IntelliJ APIs to execute run configurations, query status, and read git branch information.
 
@@ -95,7 +95,7 @@ The build compiles `src/plugin.js` through Rollup into `com.larvey.webstorm.plug
 ### IDE companion plugin
 
 ```bash
-cd webstorm-plugin
+cd jetbrains-plugin
 
 # Build (uses /Applications/WebStorm.app locally — no download)
 ./gradlew buildPlugin
@@ -136,7 +136,7 @@ FlexBar/
 │       ├── global_config.vue
 │       ├── run.vue / debug.vue / test.vue
 │       └── config_picker.vue
-├── webstorm-plugin/               # IntelliJ Platform companion plugin
+├── jetbrains-plugin/               # IntelliJ Platform companion plugin
 │   ├── build.gradle.kts
 │   └── src/main/kotlin/com/larvey/flexbar/
 │       ├── FlexBarServer.kt       # HTTP server
