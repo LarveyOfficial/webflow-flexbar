@@ -57,11 +57,11 @@ async function sendKeystrokeToWebStorm(keystroke) {
 }
 
 const FALLBACK_KEYSTROKES = {
-  "com.luis.webstorm.run":   'keystroke "r" using control down',
-  "com.luis.webstorm.debug": 'keystroke "d" using control down',
-  "com.luis.webstorm.stop":  "key code 120 using command down",
-  "com.luis.webstorm.build": "key code 101 using command down",
-  "com.luis.webstorm.test":  'keystroke "r" using {control down, shift down}',
+  "com.larvey.webstorm.run":   'keystroke "r" using control down',
+  "com.larvey.webstorm.debug": 'keystroke "d" using control down',
+  "com.larvey.webstorm.stop":  "key code 120 using command down",
+  "com.larvey.webstorm.build": "key code 101 using command down",
+  "com.larvey.webstorm.test":  'keystroke "r" using {control down, shift down}',
 };
 
 // ---------------------------------------------------------------------------
@@ -73,11 +73,11 @@ async function triggerAction(cid, keyData) {
 
   // Build the HTTP path with optional ?config= query param
   const basePaths = {
-    "com.luis.webstorm.run":   "/run",
-    "com.luis.webstorm.debug": "/debug",
-    "com.luis.webstorm.test":  "/test",
-    "com.luis.webstorm.stop":  "/stop",
-    "com.luis.webstorm.build": "/build",
+    "com.larvey.webstorm.run":   "/run",
+    "com.larvey.webstorm.debug": "/debug",
+    "com.larvey.webstorm.test":  "/test",
+    "com.larvey.webstorm.stop":  "/stop",
+    "com.larvey.webstorm.build": "/build",
   };
   const base = basePaths[cid];
   if (!base) return;
@@ -101,13 +101,13 @@ async function triggerAction(cid, keyData) {
 
 const stopWindows = {};
 
-const ACTION_CIDS = new Set(["com.luis.webstorm.run", "com.luis.webstorm.debug", "com.luis.webstorm.test"]);
+const ACTION_CIDS = new Set(["com.larvey.webstorm.run", "com.larvey.webstorm.debug", "com.larvey.webstorm.test"]);
 
 async function handleActionTap(cid, key) {
   const uid = key.uid;
   const configName = key.data?.configName || null;
 
-  const base = { "com.luis.webstorm.run": "/run", "com.luis.webstorm.debug": "/debug", "com.luis.webstorm.test": "/test" }[cid];
+  const base = { "com.larvey.webstorm.run": "/run", "com.larvey.webstorm.debug": "/debug", "com.larvey.webstorm.test": "/test" }[cid];
   const runPath = configName ? `${base}?config=${encodeURIComponent(configName)}` : base;
 
   // Not running → start immediately, no stop window needed
@@ -134,7 +134,7 @@ async function handleActionTap(cid, key) {
     const stopPath = configName ? `/stop?config=${encodeURIComponent(configName)}` : "/stop";
     const result = await callWebStorm(stopPath, "POST");
     if (!result) {
-      const keystroke = FALLBACK_KEYSTROKES["com.luis.webstorm.stop"];
+      const keystroke = FALLBACK_KEYSTROKES["com.larvey.webstorm.stop"];
       if (keystroke) await sendKeystrokeToWebStorm(keystroke);
     }
     setTimeout(pollStatus, 500);
@@ -184,21 +184,21 @@ function updateAllKeys() {
     const sn = info.serialNumber;
 
     // Run button — show config name as label; reload icon when that config is running
-    if (info.cid === "com.luis.webstorm.run" || info.cid === "com.luis.webstorm.debug") {
+    if (info.cid === "com.larvey.webstorm.run" || info.cid === "com.larvey.webstorm.debug") {
       const configName = info.data?.configName || "";
       const isRunning  = configName
         ? (cachedStatus?.runningConfigs ?? []).includes(configName)
         : (cachedStatus?.running ?? false);
 
-      const defaultLabel = info.cid === "com.luis.webstorm.debug" ? "Debug" : "Run";
-      const icon  = isRunning ? "mdi mdi-restart" : (info.cid === "com.luis.webstorm.debug" ? "mdi mdi-bug" : "mdi mdi-play-circle");
+      const defaultLabel = info.cid === "com.larvey.webstorm.debug" ? "Debug" : "Run";
+      const icon  = isRunning ? "mdi mdi-restart" : (info.cid === "com.larvey.webstorm.debug" ? "mdi mdi-bug" : "mdi mdi-play-circle");
       const label = configName ? (configName.length > 12 ? configName.slice(0, 11) + "…" : configName) : defaultLabel;
 
       drawKey(sn, info, { icon, title: label });
     }
 
     // Test button — same pattern
-    if (info.cid === "com.luis.webstorm.test") {
+    if (info.cid === "com.larvey.webstorm.test") {
       const configName = info.data?.configName || "";
       const isRunning  = configName
         ? (cachedStatus?.runningConfigs ?? []).includes(configName)
@@ -211,13 +211,13 @@ function updateAllKeys() {
     }
 
     // Stop button — bright red when anything is running
-    if (info.cid === "com.luis.webstorm.stop") {
+    if (info.cid === "com.larvey.webstorm.stop") {
       const isRunning = cachedStatus?.running ?? false;
       drawKey(sn, info, { bgColor: isRunning ? "#e53935" : "#4a1010" });
     }
 
     // Branch key
-    if (info.cid === "com.luis.webstorm.branch") {
+    if (info.cid === "com.larvey.webstorm.branch") {
       const branch = cachedStatus?.branch || "no branch";
       drawKey(sn, info, { showIcon: true, showTitle: true, title: `  ${branch}` });
     }
@@ -246,7 +246,7 @@ function getGitBranch(projectPath) {
 async function refreshBranchFallback() {
   const branch = await getGitBranch(pluginConfig.projectPath || null);
   for (const info of Object.values(liveKeys)) {
-    if (info.cid === "com.luis.webstorm.branch") {
+    if (info.cid === "com.larvey.webstorm.branch") {
       drawKey(info.serialNumber, info, {
         showIcon: true, showTitle: true,
         title: branch ? `  ${branch}` : "no branch",
@@ -282,7 +282,7 @@ plugin.on("plugin.data", async (payload) => {
   const { data } = payload;
   const { key } = data;
 
-  if (key.cid === "com.luis.webstorm.branch") {
+  if (key.cid === "com.larvey.webstorm.branch") {
     const alive = await isWebStormPluginRunning();
     alive ? await pollStatus() : await refreshBranchFallback();
     return;

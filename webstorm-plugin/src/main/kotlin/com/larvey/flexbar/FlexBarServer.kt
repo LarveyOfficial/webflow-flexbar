@@ -1,4 +1,4 @@
-package com.luis.flexbar
+package com.larvey.flexbar
 
 import com.intellij.openapi.diagnostic.Logger
 import com.sun.net.httpserver.HttpExchange

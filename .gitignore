@@ -5,3 +5,5 @@ webstorm-plugin/local.properties
 .DS_Store
 *.iml
 .idea/
+webstorm-plugin/.intellijPlatform/
+webstorm-plugin/.kotlin/

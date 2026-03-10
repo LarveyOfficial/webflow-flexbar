@@ -1,4 +1,4 @@
-package com.luis.flexbar
+package com.larvey.flexbar
 
 import com.intellij.execution.ExecutionManager
 import com.intellij.execution.ProgramRunnerUtil

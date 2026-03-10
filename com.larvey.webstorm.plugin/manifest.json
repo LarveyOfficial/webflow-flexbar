@@ -1,11 +1,11 @@
 {
   "name": "WebStorm",
-  "uuid": "com.luis.webstorm",
+  "uuid": "com.larvey.webstorm",
   "version": "1.0.0",
-  "author": "Luis",
+  "author": "Larvey",
   "entry": "backend/plugin.cjs",
   "description": "WebStorm integration for FlexBar — run, debug, stop, build, test, and git branch display.",
-  "repo": "https://github.com/luis/flexbar-webstorm",
+  "repo": "https://github.com/LarveyOfficial/webflow-flexbar",
   "sdk": {
     "version": "1.0.0"
   },
@@ -34,7 +34,7 @@
       {
         "title": "$Run.Title",
         "tip": "$Run.Tip",
-        "cid": "com.luis.webstorm.run",
+        "cid": "com.larvey.webstorm.run",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -53,7 +53,7 @@
       {
         "title": "$Debug.Title",
         "tip": "$Debug.Tip",
-        "cid": "com.luis.webstorm.debug",
+        "cid": "com.larvey.webstorm.debug",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -72,7 +72,7 @@
       {
         "title": "$Stop.Title",
         "tip": "$Stop.Tip",
-        "cid": "com.luis.webstorm.stop",
+        "cid": "com.larvey.webstorm.stop",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -89,7 +89,7 @@
       {
         "title": "$Build.Title",
         "tip": "$Build.Tip",
-        "cid": "com.luis.webstorm.build",
+        "cid": "com.larvey.webstorm.build",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -106,7 +106,7 @@
       {
         "title": "$Test.Title",
         "tip": "$Test.Tip",
-        "cid": "com.luis.webstorm.test",
+        "cid": "com.larvey.webstorm.test",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -125,7 +125,7 @@
       {
         "title": "$Branch.Title",
         "tip": "$Branch.Tip",
-        "cid": "com.luis.webstorm.branch",
+        "cid": "com.larvey.webstorm.branch",
         "config": {
           "keyType": "default",
           "clickable": true,

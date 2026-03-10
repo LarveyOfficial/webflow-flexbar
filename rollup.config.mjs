@@ -7,7 +7,7 @@ import json from "@rollup/plugin-json";
 import { glob } from "glob";
 
 const isWatching = !!process.env.ROLLUP_WATCH;
-const flexPlugin = "com.luis.webstorm.plugin";
+const flexPlugin = "com.larvey.webstorm.plugin";
 
 export default {
   input: "src/plugin.js",

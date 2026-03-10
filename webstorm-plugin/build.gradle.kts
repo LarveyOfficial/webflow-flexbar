@@ -3,7 +3,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.2.1"
 }
 
-group = "com.luis.flexbar"
+group = "com.larvey.flexbar"
 version = "1.0.0"
 
 kotlin {

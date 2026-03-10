@@ -1,4 +1,4 @@
-package com.luis.flexbar
+package com.larvey.flexbar
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity

@@ -6,13 +6,13 @@
     "build": "rollup -c",
     "dev": "npm-run-all plugin:unlink plugin:link -p plugin:watch plugin:debug",
     "plugin:watch": "rollup -c -w --watch.onEnd=\"npm run plugin:restart\"",
-    "plugin:unlink": "flexcli plugin unlink --uuid com.luis.webstorm --silent",
-    "plugin:link": "flexcli plugin link --path com.luis.webstorm.plugin --uuid com.luis.webstorm --start false",
-    "plugin:restart": "flexcli plugin restart --uuid=com.luis.webstorm",
-    "plugin:debug": "flexcli plugin debug --uuid=com.luis.webstorm",
-    "plugin:validate": "flexcli plugin validate --path com.luis.webstorm.plugin",
-    "plugin:pack": "flexcli plugin pack --path com.luis.webstorm.plugin",
-    "plugin:install": "flexcli plugin install --path ./com.luis.webstorm.flexplugin --force"
+    "plugin:unlink": "flexcli plugin unlink --uuid com.larvey.webstorm --silent",
+    "plugin:link": "flexcli plugin link --path com.larvey.webstorm.plugin --uuid com.larvey.webstorm --start false",
+    "plugin:restart": "flexcli plugin restart --uuid=com.larvey.webstorm",
+    "plugin:debug": "flexcli plugin debug --uuid=com.larvey.webstorm",
+    "plugin:validate": "flexcli plugin validate --path com.larvey.webstorm.plugin",
+    "plugin:pack": "flexcli plugin pack --path com.larvey.webstorm.plugin",
+    "plugin:install": "flexcli plugin install --path ./com.larvey.webstorm.flexplugin --force"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.0",

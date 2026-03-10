@@ -1,5 +1,5 @@
 <idea-plugin>
-    <id>com.luis.flexbar</id>
+    <id>com.larvey.flexbar</id>
     <name>FlexBar Integration</name>
     <vendor>Luis</vendor>
     <description>
@@ -12,6 +12,6 @@
     <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="com.luis.flexbar.FlexBarStartupActivity"/>
+        <postStartupActivity implementation="com.larvey.flexbar.FlexBarStartupActivity"/>
     </extensions>
 </idea-plugin>
