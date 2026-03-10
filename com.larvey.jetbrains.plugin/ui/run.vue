@@ -18,7 +18,7 @@
 
       <v-col v-if="!serverAvailable" cols="12">
         <v-alert type="warning" density="compact" variant="tonal" class="mt-2">
-          WebStorm companion plugin not reachable. Open WebStorm first, then reopen this panel.
+          IDE companion plugin not reachable. Open your JetBrains IDE first, then reopen this panel.
         </v-alert>
       </v-col>
 

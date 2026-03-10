@@ -1,12 +1,12 @@
 {
-  "name": "WebStorm",
-  "uuid": "com.larvey.webstorm",
+  "name": "JetBrains IDE",
+  "uuid": "com.larvey.jetbrains",
   "version": "1.0.0",
   "author": "Larvey",
   "entry": "backend/plugin.cjs",
-  "description": "WebStorm integration for FlexBar — run, debug, stop, build, test, and git branch display. Requires companion plugin.",
+  "description": "JetBrains IDE integration for FlexBar — run, debug, stop, build, test, and git branch display. Requires companion plugin.",
   "icon": "resources/icon.png",
-  "repo": "https://github.com/LarveyOfficial/webflow-flexbar",
+  "repo": "https://github.com/LarveyOfficial/jetbrains-flexbar",
   "sdk": {
     "version": "1.0.0"
   },
@@ -27,7 +27,7 @@
   ],
   "configPage": "global_config",
   "keyLibrary": {
-    "title": "WebStorm",
+    "title": "JetBrains IDE",
     "style": {
       "icon": "mdi mdi-code-braces"
     },
@@ -35,7 +35,7 @@
       {
         "title": "$Run.Title",
         "tip": "$Run.Tip",
-        "cid": "com.larvey.webstorm.run",
+        "cid": "com.larvey.jetbrains.run",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -54,7 +54,7 @@
       {
         "title": "$Debug.Title",
         "tip": "$Debug.Tip",
-        "cid": "com.larvey.webstorm.debug",
+        "cid": "com.larvey.jetbrains.debug",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -73,7 +73,7 @@
       {
         "title": "$Stop.Title",
         "tip": "$Stop.Tip",
-        "cid": "com.larvey.webstorm.stop",
+        "cid": "com.larvey.jetbrains.stop",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -90,7 +90,7 @@
       {
         "title": "$Build.Title",
         "tip": "$Build.Tip",
-        "cid": "com.larvey.webstorm.build",
+        "cid": "com.larvey.jetbrains.build",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -107,7 +107,7 @@
       {
         "title": "$Test.Title",
         "tip": "$Test.Tip",
-        "cid": "com.larvey.webstorm.test",
+        "cid": "com.larvey.jetbrains.test",
         "config": {
           "keyType": "default",
           "clickable": true,
@@ -126,7 +126,7 @@
       {
         "title": "$Branch.Title",
         "tip": "$Branch.Tip",
-        "cid": "com.larvey.webstorm.branch",
+        "cid": "com.larvey.jetbrains.branch",
         "config": {
           "keyType": "default",
           "clickable": true,

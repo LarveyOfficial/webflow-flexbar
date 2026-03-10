@@ -9,15 +9,15 @@
       variant="tonal"
     >
       <template v-if="connected">
-        WebStorm companion plugin connected — direct API active.
+        IDE companion plugin connected — direct API active.
       </template>
       <template v-else>
-        WebStorm companion plugin not detected. Install it in WebStorm and actions
-        will use the direct API; for now, AppleScript shortcuts are used as a fallback.
+        IDE companion plugin not detected. Install it in your JetBrains IDE — keys will
+        show "Waiting for IDE" until the companion plugin is running.
       </template>
     </v-alert>
 
-    <v-card prepend-icon="mdi-code-braces" title="WebStorm Plugin Settings">
+    <v-card prepend-icon="mdi-code-braces" title="JetBrains IDE Plugin Settings">
       <v-card-text>
         <v-row>
           <v-col cols="12">

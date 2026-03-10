@@ -5,9 +5,9 @@
         <v-select
           v-model="modelValue.data.configName"
           :items="configs"
-          item-title="title"
-          item-value="value"
           :label="label"
+          placeholder="Use currently selected config"
+          clearable
           outlined
           hide-details="auto"
           :loading="loading"
@@ -18,7 +18,7 @@
 
       <v-col v-if="!serverAvailable" cols="12">
         <v-alert type="warning" density="compact" variant="tonal" class="mt-2">
-          WebStorm companion plugin not reachable. Open WebStorm first, then reopen this panel.
+          IDE companion plugin not reachable. Open your JetBrains IDE first, then reopen this panel.
         </v-alert>
       </v-col>
 
@@ -64,11 +64,7 @@ export default {
     try {
       const res = await fetch(endpoint);
       const data = await res.json();
-      const names = data.configs ?? [];
-      this.configs = [
-        { title: "Current configuration", value: "" },
-        ...names.map((n) => ({ title: n, value: n })),
-      ];
+      this.configs = data.configs ?? [];
       this.serverAvailable = true;
     } catch {
       this.serverAvailable = false;

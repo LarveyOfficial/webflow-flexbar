@@ -7,10 +7,10 @@ const liveKeys = {};
 let pluginConfig = {};
 
 // ---------------------------------------------------------------------------
-// WebStorm HTTP API  (localhost:7123)
+// IDE HTTP API  (localhost:7123)
 // ---------------------------------------------------------------------------
 
-function callWebStorm(path, method = "POST") {
+function callIDE(path, method = "POST") {
   return new Promise((resolve) => {
     const req = http.request(
       { hostname: "127.0.0.1", port: 7123, path, method, headers: { "Content-Length": "0" } },
@@ -34,17 +34,17 @@ async function triggerAction(cid, keyData) {
   const configName = keyData?.configName || null;
 
   const basePaths = {
-    "com.larvey.webstorm.run":   "/run",
-    "com.larvey.webstorm.debug": "/debug",
-    "com.larvey.webstorm.test":  "/test",
-    "com.larvey.webstorm.stop":  "/stop",
-    "com.larvey.webstorm.build": "/build",
+    "com.larvey.jetbrains.run":   "/run",
+    "com.larvey.jetbrains.debug": "/debug",
+    "com.larvey.jetbrains.test":  "/test",
+    "com.larvey.jetbrains.stop":  "/stop",
+    "com.larvey.jetbrains.build": "/build",
   };
   const base = basePaths[cid];
   if (!base) return;
 
   const path = configName ? `${base}?config=${encodeURIComponent(configName)}` : base;
-  const result = await callWebStorm(path, "POST");
+  const result = await callIDE(path, "POST");
 
   if (!result) {
     logger.warn(`HTTP ${path} failed — companion plugin not running`);
@@ -60,7 +60,7 @@ async function triggerAction(cid, keyData) {
 
 const stopWindows = {};
 
-const ACTION_CIDS = new Set(["com.larvey.webstorm.run", "com.larvey.webstorm.debug", "com.larvey.webstorm.test"]);
+const ACTION_CIDS = new Set(["com.larvey.jetbrains.run", "com.larvey.jetbrains.debug", "com.larvey.jetbrains.test"]);
 
 async function handleActionTap(cid, key) {
   if (!cachedStatus) return; // companion plugin not running — do nothing
@@ -68,7 +68,7 @@ async function handleActionTap(cid, key) {
   const uid = key.uid;
   const configName = key.data?.configName || null;
 
-  const base = { "com.larvey.webstorm.run": "/run", "com.larvey.webstorm.debug": "/debug", "com.larvey.webstorm.test": "/test" }[cid];
+  const base = { "com.larvey.jetbrains.run": "/run", "com.larvey.jetbrains.debug": "/debug", "com.larvey.jetbrains.test": "/test" }[cid];
   const runPath = configName ? `${base}?config=${encodeURIComponent(configName)}` : base;
 
   // Not running → start immediately, no stop window needed
@@ -77,7 +77,7 @@ async function handleActionTap(cid, key) {
     : (cachedStatus?.running ?? false);
 
   if (!isRunning) {
-    await callWebStorm(runPath, "POST");
+    await callIDE(runPath, "POST");
     setTimeout(pollStatus, 1500);
     return;
   }
@@ -89,7 +89,7 @@ async function handleActionTap(cid, key) {
     delete stopWindows[uid];
 
     const stopPath = configName ? `/stop?config=${encodeURIComponent(configName)}` : "/stop";
-    await callWebStorm(stopPath, "POST");
+    await callIDE(stopPath, "POST");
     setTimeout(pollStatus, 500);
     return;
   }
@@ -109,7 +109,7 @@ async function handleActionTap(cid, key) {
   stopWindows[uid] = {
     timer: setTimeout(async () => {
       delete stopWindows[uid];
-      await callWebStorm(runPath, "POST");
+      await callIDE(runPath, "POST");
       setTimeout(pollStatus, 1500);
     }, 1000),
   };
@@ -123,7 +123,7 @@ let cachedStatus = null;
 let cachedBranch = null;
 
 async function pollStatus() {
-  const status = await callWebStorm("/status", "GET");
+  const status = await callIDE("/status", "GET");
   cachedStatus = status ?? null;
   if (status?.branch) cachedBranch = status.branch;
   updateAllKeys();
@@ -136,7 +136,7 @@ function updateAllKeys() {
     const sn = info.serialNumber;
 
     // Run / Debug buttons
-    if (info.cid === "com.larvey.webstorm.run" || info.cid === "com.larvey.webstorm.debug") {
+    if (info.cid === "com.larvey.jetbrains.run" || info.cid === "com.larvey.jetbrains.debug") {
       if (!connected) {
         drawKey(sn, info, { bgColor: "#1a1a1a", showIcon: true, showTitle: true, title: "Waiting for IDE" });
         continue;
@@ -146,15 +146,15 @@ function updateAllKeys() {
         ? (cachedStatus.runningConfigs ?? []).includes(configName)
         : (cachedStatus.running ?? false);
 
-      const defaultLabel = info.cid === "com.larvey.webstorm.debug" ? "Debug" : "Run";
-      const icon  = isRunning ? "mdi mdi-restart" : (info.cid === "com.larvey.webstorm.debug" ? "mdi mdi-bug" : "mdi mdi-play-circle");
+      const defaultLabel = info.cid === "com.larvey.jetbrains.debug" ? "Debug" : "Run";
+      const icon  = isRunning ? "mdi mdi-restart" : (info.cid === "com.larvey.jetbrains.debug" ? "mdi mdi-bug" : "mdi mdi-play-circle");
       const label = configName ? (configName.length > 12 ? configName.slice(0, 11) + "…" : configName) : defaultLabel;
 
       drawKey(sn, info, { icon, title: label });
     }
 
     // Test button
-    if (info.cid === "com.larvey.webstorm.test") {
+    if (info.cid === "com.larvey.jetbrains.test") {
       if (!connected) {
         drawKey(sn, info, { bgColor: "#1a1a1a", showIcon: true, showTitle: true, title: "Waiting for IDE" });
         continue;
@@ -171,18 +171,18 @@ function updateAllKeys() {
     }
 
     // Stop button — bright red when anything is running, dark when idle, grey when disconnected
-    if (info.cid === "com.larvey.webstorm.stop") {
+    if (info.cid === "com.larvey.jetbrains.stop") {
       const bgColor = !connected ? "#1a1a1a" : (cachedStatus.running ? "#e53935" : "#4a1010");
       drawKey(sn, info, { bgColor });
     }
 
     // Build button — grey when disconnected
-    if (info.cid === "com.larvey.webstorm.build") {
+    if (info.cid === "com.larvey.jetbrains.build") {
       if (!connected) drawKey(sn, info, { bgColor: "#1a1a1a" });
     }
 
     // Branch key — always draws from cachedBranch (updated by poll or git fallback)
-    if (info.cid === "com.larvey.webstorm.branch") {
+    if (info.cid === "com.larvey.jetbrains.branch") {
       const branch = cachedBranch || "no branch";
       drawKey(sn, info, { showIcon: true, showTitle: true, title: `  ${branch}` });
     }
@@ -241,7 +241,7 @@ plugin.on("plugin.data", async (payload) => {
   const { data } = payload;
   const { key } = data;
 
-  if (key.cid === "com.larvey.webstorm.branch") {
+  if (key.cid === "com.larvey.jetbrains.branch") {
     await pollStatus();
     if (!cachedStatus) await refreshBranchFallback();
     return;
