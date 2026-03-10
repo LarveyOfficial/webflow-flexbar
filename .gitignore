@@ -1,9 +1,10 @@
 node_modules/
-webstorm-plugin/build/
-webstorm-plugin/.gradle/
-webstorm-plugin/local.properties
+jetbrains-plugin/build/
+jetbrains-plugin/.gradle/
+jetbrains-plugin/local.properties
+jetbrains-plugin/.intellijPlatform/
+jetbrains-plugin/.kotlin/
 .DS_Store
 *.iml
 .idea/
-webstorm-plugin/.intellijPlatform/
-webstorm-plugin/.kotlin/
+"Jetbrains Logo.png"

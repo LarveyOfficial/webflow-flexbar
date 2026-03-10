@@ -1,3 +1,0 @@
-- The since-build='241' is lower than the target IntelliJ Platform major version: '253'.
-- The Java configuration specifies targetCompatibility=21 but since-build='241' property requires targetCompatibility='17'.
-- The Kotlin configuration specifies jvmTarget='21' but since-build='241' property requires jvmTarget='17'.
