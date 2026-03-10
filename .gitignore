@@ -1,0 +1,7 @@
+node_modules/
+webstorm-plugin/build/
+webstorm-plugin/.gradle/
+webstorm-plugin/local.properties
+.DS_Store
+*.iml
+.idea/

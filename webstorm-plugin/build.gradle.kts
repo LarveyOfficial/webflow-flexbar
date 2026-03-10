@@ -1,0 +1,45 @@
+plugins {
+    id("org.jetbrains.kotlin.jvm") version "2.2.0"
+    id("org.jetbrains.intellij.platform") version "2.2.1"
+}
+
+group = "com.luis.flexbar"
+version = "1.0.0"
+
+kotlin {
+    jvmToolchain(21)
+}
+
+repositories {
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+dependencies {
+    intellijPlatform {
+        // Use the locally installed WebStorm — no downloading required.
+        local("/Applications/WebStorm.app")
+        bundledPlugin("Git4Idea")
+    }
+}
+
+tasks {
+    buildSearchableOptions { enabled = false }
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        name = "FlexBar Integration"
+        version = "1.0.0"
+        description = """
+            Exposes a local HTTP server on <b>localhost:7123</b> so the FlexBar
+            hardware can directly control WebStorm: run, debug, stop, build,
+            and display the current Git branch and run configuration.
+        """.trimIndent()
+        ideaVersion {
+            sinceBuild = "241" // 2024.1
+        }
+    }
+}

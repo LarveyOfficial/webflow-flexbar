@@ -1,0 +1,172 @@
+{
+  "name": "WebStorm",
+  "uuid": "com.luis.webstorm",
+  "version": "1.0.0",
+  "author": "Luis",
+  "entry": "backend/plugin.cjs",
+  "description": "WebStorm integration for FlexBar — run, debug, stop, build, test, and git branch display.",
+  "repo": "https://github.com/luis/flexbar-webstorm",
+  "sdk": {
+    "version": "1.0.0"
+  },
+  "software": {
+    "minimumVersion": "1.0.0"
+  },
+  "os": [
+    {
+      "platform": "mac",
+      "minimumVersion": "10.15"
+    }
+  ],
+  "device": [
+    {
+      "name": "flexbar",
+      "version": "1.0.0"
+    }
+  ],
+  "configPage": "global_config",
+  "keyLibrary": {
+    "title": "WebStorm",
+    "style": {
+      "icon": "mdi mdi-code-braces"
+    },
+    "children": [
+      {
+        "title": "$Run.Title",
+        "tip": "$Run.Tip",
+        "cid": "com.luis.webstorm.run",
+        "config": {
+          "keyType": "default",
+          "clickable": true,
+          "platform": ["mac"]
+        },
+        "style": {
+          "icon": "mdi mdi-play-circle",
+          "width": 200,
+          "bgColor": "#2d6a4f",
+          "fgColor": "#ffffff",
+          "showIcon": true,
+          "showTitle": true
+        },
+        "data": { "configName": "" }
+      },
+      {
+        "title": "$Debug.Title",
+        "tip": "$Debug.Tip",
+        "cid": "com.luis.webstorm.debug",
+        "config": {
+          "keyType": "default",
+          "clickable": true,
+          "platform": ["mac"]
+        },
+        "style": {
+          "icon": "mdi mdi-bug",
+          "width": 200,
+          "bgColor": "#b5500b",
+          "fgColor": "#ffffff",
+          "showIcon": true,
+          "showTitle": true
+        },
+        "data": { "configName": "" }
+      },
+      {
+        "title": "$Stop.Title",
+        "tip": "$Stop.Tip",
+        "cid": "com.luis.webstorm.stop",
+        "config": {
+          "keyType": "default",
+          "clickable": true,
+          "platform": ["mac"]
+        },
+        "style": {
+          "icon": "mdi mdi-stop-circle",
+          "width": 120,
+          "bgColor": "#c62828",
+          "fgColor": "#ffffff"
+        },
+        "data": {}
+      },
+      {
+        "title": "$Build.Title",
+        "tip": "$Build.Tip",
+        "cid": "com.luis.webstorm.build",
+        "config": {
+          "keyType": "default",
+          "clickable": true,
+          "platform": ["mac"]
+        },
+        "style": {
+          "icon": "mdi mdi-hammer-wrench",
+          "width": 120,
+          "bgColor": "#1565c0",
+          "fgColor": "#ffffff"
+        },
+        "data": {}
+      },
+      {
+        "title": "$Test.Title",
+        "tip": "$Test.Tip",
+        "cid": "com.luis.webstorm.test",
+        "config": {
+          "keyType": "default",
+          "clickable": true,
+          "platform": ["mac"]
+        },
+        "style": {
+          "icon": "mdi mdi-test-tube",
+          "width": 200,
+          "bgColor": "#6a1b9a",
+          "fgColor": "#ffffff",
+          "showIcon": true,
+          "showTitle": true
+        },
+        "data": { "configName": "" }
+      },
+      {
+        "title": "$Branch.Title",
+        "tip": "$Branch.Tip",
+        "cid": "com.luis.webstorm.branch",
+        "config": {
+          "keyType": "default",
+          "clickable": true,
+          "platform": ["mac"]
+        },
+        "style": {
+          "icon": "mdi mdi-source-branch",
+          "width": 280,
+          "bgColor": "#1e1e2e",
+          "fgColor": "#89b4fa"
+        },
+        "data": {}
+      }
+    ]
+  },
+  "local": {
+    "en": {
+      "Run": {
+        "Title": "Run",
+        "Tip": "Run the current run configuration (⌃R)"
+      },
+      "Debug": {
+        "Title": "Debug",
+        "Tip": "Debug the current run configuration (⌃D)"
+      },
+      "Stop": {
+        "Title": "Stop",
+        "Tip": "Stop the running process (⌘F2)"
+      },
+      "Build": {
+        "Title": "Build",
+        "Tip": "Build the project (⌘F9)"
+      },
+      "Test": {
+        "Title": "Test",
+        "Tip": "Run tests (⌃⇧R)"
+      },
+      "Branch": {
+        "Title": "Git Branch",
+        "Tip": "Shows the current Git branch. Tap to refresh. Configure the project path in plugin settings."
+      }
+    }
+  }
+}
