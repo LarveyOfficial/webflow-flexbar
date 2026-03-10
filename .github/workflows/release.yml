@@ -50,7 +50,7 @@ jobs:
           gradle-home-cache-cleanup: true
 
       - name: Build plugin
-        run: ./gradlew buildPlugin -PwsVersion=2024.3
+        run: ./gradlew buildPlugin -PwsVersion=2025.3 --no-configuration-cache
         working-directory: webstorm-plugin
 
       - uses: actions/upload-artifact@v4
