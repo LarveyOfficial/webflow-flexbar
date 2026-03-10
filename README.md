@@ -1,6 +1,8 @@
-# WebStorm FlexBar Plugin
+# JetBrains IDE FlexBar Plugin
 
-Control WebStorm from your [FlexBar](https://www.flexbar.app/) hardware device — run, debug, stop, build, test, and display the current git branch on dedicated keys.
+Control your JetBrains IDE from your [FlexBar](https://www.flexbar.app/) hardware device — run, debug, stop, build, test, and display the current git branch on dedicated keys.
+
+> **Note:** This plugin has only been tested with WebStorm. It should work with other JetBrains IDEs (IntelliJ IDEA, GoLand, PyCharm, etc.) since it only uses platform-level APIs, but this is not officially verified.
 
 ## Architecture
 
@@ -13,21 +15,20 @@ FlexBar device
      ▼
 Node.js plugin (src/plugin.js)
      │
-     │  HTTP to localhost:7123 (primary)
-     │  AppleScript fallback (if server unreachable)
+     │  HTTP to localhost:7123
      ▼
-WebStorm companion plugin (webstorm-plugin/)
+IDE companion plugin (webstorm-plugin/)
      │
      │  IntelliJ Platform APIs
      ▼
-WebStorm IDE
+JetBrains IDE
 ```
 
 ### FlexBar Plugin (`com.larvey.webstorm.plugin/`)
 
-A Node.js backend built with the `@eniac/flexdesigner` SDK. Communicates with FlexDesigner over WebSocket, polls the WebStorm companion plugin every 10 seconds, and updates key displays based on IDE state. Falls back to AppleScript keystrokes if the companion plugin is unreachable.
+A Node.js backend built with the `@eniac/flexdesigner` SDK. Communicates with FlexDesigner over WebSocket, polls the IDE companion plugin every 10 seconds, and updates key displays based on IDE state. Keys show **"Waiting for IDE"** when the companion plugin is unreachable.
 
-### WebStorm Companion Plugin (`webstorm-plugin/`)
+### IDE Companion Plugin (`webstorm-plugin/`)
 
 A Kotlin/IntelliJ Platform plugin that exposes an HTTP server on `127.0.0.1:7123`. It uses IntelliJ APIs to execute run configurations, query status, and read git branch information.
 
@@ -46,21 +47,21 @@ Run, Debug, and Test keys show the selected configuration name as their label an
 
 ## Prerequisites
 
-- macOS 10.15+ (AppleScript fallback requires macOS)
+- macOS 10.15+
 - [FlexDesigner](https://www.flexbar.app/) installed
-- [WebStorm](https://www.jetbrains.com/webstorm/) 2024.1+
+- A JetBrains IDE (2024.1+) with the companion plugin installed
 - Node.js 20+ and npm (for building the FlexBar plugin)
-- Java 21+ (for building the WebStorm companion plugin)
+- Java 21+ (for building the companion plugin)
 
 ## Installation
 
-### 1. Install the WebStorm companion plugin
+### 1. Install the IDE companion plugin
 
-Download `webstorm-flexbar-plugin-*.zip` from the [latest release](../../releases/latest) and install it in WebStorm:
+Download `webstorm-flexbar-plugin-*.zip` from the [latest release](../../releases/latest) and install it in your JetBrains IDE:
 
 > **Settings → Plugins → ⚙ gear icon → Install Plugin from Disk…**
 
-Restart WebStorm. The plugin starts an HTTP server on `localhost:7123` automatically on startup.
+Restart the IDE. The plugin starts an HTTP server on `localhost:7123` automatically on startup.
 
 ### 2. Install the FlexBar plugin
 
@@ -70,7 +71,7 @@ Download `com.larvey.webstorm.flexplugin` from the [latest release](../../releas
 
 ### 3. Configure (optional)
 
-Open the FlexBar plugin settings in FlexDesigner. If you are not using the WebStorm companion plugin, set your project path here so the Branch key can still read the current branch via git CLI.
+Open the FlexBar plugin settings in FlexDesigner. Set your project path if you want the Branch key to fall back to reading the current branch via git CLI when the companion plugin is unreachable.
 
 ## Development
 
@@ -91,7 +92,7 @@ npm run plugin:pack
 
 The build compiles `src/plugin.js` through Rollup into `com.larvey.webstorm.plugin/backend/plugin.cjs`.
 
-### WebStorm companion plugin
+### IDE companion plugin
 
 ```bash
 cd webstorm-plugin
@@ -103,7 +104,7 @@ cd webstorm-plugin
 build/distributions/webstorm-flexbar-plugin-1.0.0.zip
 ```
 
-Install the zip in WebStorm via **Settings → Plugins → ⚙ → Install Plugin from Disk**.
+Install the zip via **Settings → Plugins → ⚙ → Install Plugin from Disk**.
 
 ## HTTP API (companion plugin)
 

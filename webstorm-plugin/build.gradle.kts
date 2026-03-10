@@ -42,8 +42,8 @@ intellijPlatform {
         version = "1.0.0"
         description = """
             Exposes a local HTTP server on <b>localhost:7123</b> so the FlexBar
-            hardware can directly control WebStorm: run, debug, stop, build,
-            and display the current Git branch and run configuration.
+            hardware can directly control your JetBrains IDE: run, debug, stop,
+            build, and display the current Git branch and run configuration.
         """.trimIndent()
         ideaVersion {
             sinceBuild = "241" // 2024.1

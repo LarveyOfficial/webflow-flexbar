@@ -4,8 +4,8 @@
     <vendor>Larvey</vendor>
     <description>
         Exposes a local HTTP server on localhost:7123 so the FlexBar hardware
-        can directly control WebStorm: run, debug, stop, build, and display the
-        current Git branch and active run configuration.
+        can directly control your JetBrains IDE: run, debug, stop, build, and
+        display the current Git branch and active run configuration.
     </description>
 
     <depends>com.intellij.modules.platform</depends>
