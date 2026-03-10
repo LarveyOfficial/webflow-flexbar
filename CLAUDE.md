@@ -40,7 +40,7 @@ npm run plugin:pack    # package as com.larvey.webstorm.flexplugin
 ```bash
 cd webstorm-plugin
 ./gradlew buildPlugin                         # local (uses /Applications/WebStorm.app)
-./gradlew buildPlugin -PwsVersion=2024.3      # CI (downloads WebStorm)
+./gradlew buildPlugin -PwsVersion=2025.3 --no-configuration-cache  # CI (downloads WebStorm)
 # Output: build/distributions/webstorm-flexbar-plugin-1.0.0.zip
 ```
 
@@ -54,7 +54,7 @@ cd webstorm-plugin
 
 Releasing is tag-driven. Pushing a `v*` tag triggers `.github/workflows/release.yml`:
 1. Builds the FlexBar plugin (npm + zip → `com.larvey.webstorm.flexplugin`)
-2. Builds the WebStorm companion plugin (Gradle with `-PwsVersion=2024.3`)
+2. Builds the WebStorm companion plugin (Gradle with `-PwsVersion=2025.3`)
 3. Creates a GitHub Release with both artifacts attached
 
 The `wsVersion` Gradle property switches the build from `local("/Applications/WebStorm.app")` to downloading the specified version — don't remove it.
