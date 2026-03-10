@@ -48,8 +48,12 @@ export default {
     return { loading: false, serverAvailable: false };
   },
 
-  async mounted() {
+  created() {
+    if (!this.modelValue.data) this.modelValue.data = {};
     if (!this.modelValue.data.port) this.modelValue.data.port = 7123;
+  },
+
+  async mounted() {
     await this.checkConnection();
   },
 
