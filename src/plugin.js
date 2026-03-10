@@ -116,6 +116,17 @@ async function handleActionTap(cid, key) {
 }
 
 // ---------------------------------------------------------------------------
+// Ellipsis helper — truncates to fit available text area at fontSize 24
+// Text centered at 62% of keyWidth; clips at right edge.
+// ---------------------------------------------------------------------------
+
+function ellipsis(text, keyWidth) {
+  const maxChars = Math.max(1, Math.floor((keyWidth * 0.76 - 8) / 12));
+  if (text.length <= maxChars) return text;
+  return text.slice(0, maxChars - 1) + "…";
+}
+
+// ---------------------------------------------------------------------------
 // Status polling & key drawing
 // ---------------------------------------------------------------------------
 
@@ -148,7 +159,7 @@ function updateAllKeys() {
 
       const defaultLabel = info.cid === "com.larvey.jetbrains.debug" ? "Debug" : "Run";
       const icon  = isRunning ? "mdi mdi-restart" : (info.cid === "com.larvey.jetbrains.debug" ? "mdi mdi-bug" : "mdi mdi-play-circle");
-      const label = configName ? (configName.length > 12 ? configName.slice(0, 11) + "…" : configName) : defaultLabel;
+      const label = configName ? ellipsis(configName, info.style.width) : defaultLabel;
 
       drawKey(sn, info, { icon, title: label });
     }
@@ -165,7 +176,7 @@ function updateAllKeys() {
         : false;
 
       const icon  = isRunning ? "mdi mdi-restart" : "mdi mdi-test-tube";
-      const label = configName ? (configName.length > 12 ? configName.slice(0, 11) + "…" : configName) : "Test";
+      const label = configName ? ellipsis(configName, info.style.width) : "Test";
 
       drawKey(sn, info, { icon, title: label });
     }
@@ -184,7 +195,7 @@ function updateAllKeys() {
     // Branch key — always draws from cachedBranch (updated by poll or git fallback)
     if (info.cid === "com.larvey.jetbrains.branch") {
       const branch = cachedBranch || "no branch";
-      drawKey(sn, info, { showIcon: true, showTitle: true, title: `  ${branch}` });
+      drawKey(sn, info, { showIcon: true, showTitle: true, title: ellipsis(branch, info.style.width) });
     }
   }
 }

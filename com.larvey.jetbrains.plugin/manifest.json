@@ -1,11 +1,10 @@
 {
   "name": "JetBrains IDE",
   "uuid": "com.larvey.jetbrains",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Larvey",
   "entry": "backend/plugin.cjs",
   "description": "JetBrains IDE integration for FlexBar — run, debug, stop, build, test, and git branch display. Requires companion plugin.",
-  "icon": "resources/icon.png",
   "repo": "https://github.com/LarveyOfficial/jetbrains-flexbar",
   "sdk": {
     "version": "1.0.0"
@@ -47,7 +46,12 @@
           "bgColor": "#2d6a4f",
           "fgColor": "#ffffff",
           "showIcon": true,
-          "showTitle": true
+          "showTitle": true,
+          "fontSize": 24,
+          "iconSize": 42,
+          "iconPos": { "X": 15, "Y": 50 },
+          "titlePos": { "X": 62, "Y": 50 },
+          "foregroundOutline": true
         },
         "data": { "configName": "" }
       },
@@ -66,7 +70,12 @@
           "bgColor": "#b5500b",
           "fgColor": "#ffffff",
           "showIcon": true,
-          "showTitle": true
+          "showTitle": true,
+          "fontSize": 24,
+          "iconSize": 42,
+          "iconPos": { "X": 15, "Y": 50 },
+          "titlePos": { "X": 62, "Y": 50 },
+          "foregroundOutline": true
         },
         "data": { "configName": "" }
       },
@@ -83,7 +92,10 @@
           "icon": "mdi mdi-stop-circle",
           "width": 120,
           "bgColor": "#c62828",
-          "fgColor": "#ffffff"
+          "fgColor": "#ffffff",
+          "iconSize": 42,
+          "iconPos": { "X": 50, "Y": 50 },
+          "foregroundOutline": true
         },
         "data": {}
       },
@@ -100,7 +112,10 @@
           "icon": "mdi mdi-hammer-wrench",
           "width": 120,
           "bgColor": "#1565c0",
-          "fgColor": "#ffffff"
+          "fgColor": "#ffffff",
+          "iconSize": 42,
+          "iconPos": { "X": 50, "Y": 50 },
+          "foregroundOutline": true
         },
         "data": {}
       },
@@ -119,7 +134,12 @@
           "bgColor": "#6a1b9a",
           "fgColor": "#ffffff",
           "showIcon": true,
-          "showTitle": true
+          "showTitle": true,
+          "fontSize": 24,
+          "iconSize": 42,
+          "iconPos": { "X": 15, "Y": 50 },
+          "titlePos": { "X": 62, "Y": 50 },
+          "foregroundOutline": true
         },
         "data": { "configName": "" }
       },
@@ -136,7 +156,14 @@
           "icon": "mdi mdi-source-branch",
           "width": 280,
           "bgColor": "#1e1e2e",
-          "fgColor": "#89b4fa"
+          "fgColor": "#89b4fa",
+          "showIcon": true,
+          "showTitle": true,
+          "fontSize": 24,
+          "iconSize": 42,
+          "iconPos": { "X": 15, "Y": 50 },
+          "titlePos": { "X": 62, "Y": 50 },
+          "foregroundOutline": true
         },
         "data": {}
       }
@@ -146,23 +173,23 @@
     "en": {
       "Run": {
         "Title": "Run",
-        "Tip": "Run the current run configuration (⌃R)"
+        "Tip": "Run the current or selected run configuration"
       },
       "Debug": {
         "Title": "Debug",
-        "Tip": "Debug the current run configuration (⌃D)"
+        "Tip": "Debug the current or selected run configuration"
       },
       "Stop": {
         "Title": "Stop",
-        "Tip": "Stop the running process (⌘F2)"
+        "Tip": "Stop all running processes"
       },
       "Build": {
         "Title": "Build",
-        "Tip": "Build the project (⌘F9)"
+        "Tip": "Build the project"
       },
       "Test": {
         "Title": "Test",
-        "Tip": "Run tests (⌃⇧R)"
+        "Tip": "Run the current or selected test configuration"
       },
       "Branch": {
         "Title": "Git Branch",
