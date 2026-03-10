@@ -1,7 +1,7 @@
 {
   "name": "JetBrains IDE",
   "uuid": "com.larvey.jetbrains",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Larvey",
   "entry": "backend/plugin.cjs",
   "description": "JetBrains IDE integration for FlexBar — run, debug, stop, build, test, and git branch display. Requires companion plugin.",
