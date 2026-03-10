@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "author": "Larvey",
   "entry": "backend/plugin.cjs",
-  "description": "WebStorm integration for FlexBar — run, debug, stop, build, test, and git branch display.",
+  "description": "WebStorm integration for FlexBar — run, debug, stop, build, test, and git branch display. Requires companion plugin.",
   "repo": "https://github.com/LarveyOfficial/webflow-flexbar",
   "sdk": {
     "version": "1.0.0"
