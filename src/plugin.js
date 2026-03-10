@@ -1,5 +1,5 @@
 const { plugin, logger } = require("@eniac/flexdesigner");
-const { exec, execFile } = require("child_process");
+const { exec } = require("child_process");
 const http = require("http");
 
 // uid -> { ...key, serialNumber }
@@ -26,52 +26,13 @@ function callWebStorm(path, method = "POST") {
   });
 }
 
-async function isWebStormPluginRunning() {
-  const res = await callWebStorm("/ping", "GET");
-  return res?.ok === true;
-}
-
 // ---------------------------------------------------------------------------
-// AppleScript fallback
-// ---------------------------------------------------------------------------
-
-function runAppleScript(script) {
-  return new Promise((resolve, reject) => {
-    execFile("osascript", ["-e", script], (err, stdout, stderr) => {
-      if (err) reject(new Error(stderr || err.message));
-      else resolve(stdout.trim());
-    });
-  });
-}
-
-async function sendKeystrokeToWebStorm(keystroke) {
-  try {
-    await runAppleScript('tell application "WebStorm" to activate');
-    await new Promise((r) => setTimeout(r, 150));
-    await runAppleScript(
-      `tell application "System Events"\ntell process "WebStorm"\n${keystroke}\nend tell\nend tell`
-    );
-  } catch (e) {
-    logger.warn("AppleScript fallback failed:", e.message);
-  }
-}
-
-const FALLBACK_KEYSTROKES = {
-  "com.larvey.webstorm.run":   'keystroke "r" using control down',
-  "com.larvey.webstorm.debug": 'keystroke "d" using control down',
-  "com.larvey.webstorm.stop":  "key code 120 using command down",
-  "com.larvey.webstorm.build": "key code 101 using command down",
-  "com.larvey.webstorm.test":  'keystroke "r" using {control down, shift down}',
-};
-
-// ---------------------------------------------------------------------------
-// Action dispatch — always tries HTTP first, falls back to AppleScript
+// Action dispatch — HTTP only
 // ---------------------------------------------------------------------------
 
 async function triggerAction(cid, keyData) {
   const configName = keyData?.configName || null;
 
-  // Build the HTTP path with optional ?config= query param
   const basePaths = {
     "com.larvey.webstorm.run":   "/run",
     "com.larvey.webstorm.debug": "/debug",
@@ -86,11 +47,9 @@ async function triggerAction(cid, keyData) {
   const result = await callWebStorm(path, "POST");
 
   if (!result) {
-    logger.warn(`HTTP ${path} unavailable — falling back to AppleScript`);
-    const keystroke = FALLBACK_KEYSTROKES[cid];
-    if (keystroke) await sendKeystrokeToWebStorm(keystroke);
+    logger.warn(`HTTP ${path} failed — companion plugin not running`);
   } else if (result.error) {
-    logger.warn(`WebStorm error for ${path}:`, result.error);
+    logger.warn(`IDE error for ${path}:`, result.error);
   }
 }
 
@@ -104,6 +63,8 @@ const stopWindows = {};
 const ACTION_CIDS = new Set(["com.larvey.webstorm.run", "com.larvey.webstorm.debug", "com.larvey.webstorm.test"]);
 
 async function handleActionTap(cid, key) {
+  if (!cachedStatus) return; // companion plugin not running — do nothing
+
   const uid = key.uid;
   const configName = key.data?.configName || null;
 
@@ -116,11 +77,7 @@ async function handleActionTap(cid, key) {
     : (cachedStatus?.running ?? false);
 
   if (!isRunning) {
-    const result = await callWebStorm(runPath, "POST");
-    if (!result) {
-      const keystroke = FALLBACK_KEYSTROKES[cid];
-      if (keystroke) await sendKeystrokeToWebStorm(keystroke);
-    }
+    await callWebStorm(runPath, "POST");
     setTimeout(pollStatus, 1500);
     return;
   }
@@ -132,11 +89,7 @@ async function handleActionTap(cid, key) {
     delete stopWindows[uid];
 
     const stopPath = configName ? `/stop?config=${encodeURIComponent(configName)}` : "/stop";
-    const result = await callWebStorm(stopPath, "POST");
-    if (!result) {
-      const keystroke = FALLBACK_KEYSTROKES["com.larvey.webstorm.stop"];
-      if (keystroke) await sendKeystrokeToWebStorm(keystroke);
-    }
+    await callWebStorm(stopPath, "POST");
     setTimeout(pollStatus, 500);
     return;
   }
@@ -156,12 +109,7 @@ async function handleActionTap(cid, key) {
   stopWindows[uid] = {
     timer: setTimeout(async () => {
       delete stopWindows[uid];
-      // No second tap — go ahead and restart
-      const result = await callWebStorm(runPath, "POST");
-      if (!result) {
-        const keystroke = FALLBACK_KEYSTROKES[cid];
-        if (keystroke) await sendKeystrokeToWebStorm(keystroke);
-      }
+      await callWebStorm(runPath, "POST");
       setTimeout(pollStatus, 1500);
     }, 1000),
   };
@@ -172,23 +120,31 @@ async function handleActionTap(cid, key) {
 // ---------------------------------------------------------------------------
 
 let cachedStatus = null;
+let cachedBranch = null;
 
 async function pollStatus() {
   const status = await callWebStorm("/status", "GET");
   cachedStatus = status ?? null;
+  if (status?.branch) cachedBranch = status.branch;
   updateAllKeys();
 }
 
 function updateAllKeys() {
+  const connected = cachedStatus !== null;
+
   for (const info of Object.values(liveKeys)) {
     const sn = info.serialNumber;
 
-    // Run button — show config name as label; reload icon when that config is running
+    // Run / Debug buttons
     if (info.cid === "com.larvey.webstorm.run" || info.cid === "com.larvey.webstorm.debug") {
+      if (!connected) {
+        drawKey(sn, info, { bgColor: "#1a1a1a", showIcon: true, showTitle: true, title: "Waiting for IDE" });
+        continue;
+      }
       const configName = info.data?.configName || "";
       const isRunning  = configName
-        ? (cachedStatus?.runningConfigs ?? []).includes(configName)
-        : (cachedStatus?.running ?? false);
+        ? (cachedStatus.runningConfigs ?? []).includes(configName)
+        : (cachedStatus.running ?? false);
 
       const defaultLabel = info.cid === "com.larvey.webstorm.debug" ? "Debug" : "Run";
       const icon  = isRunning ? "mdi mdi-restart" : (info.cid === "com.larvey.webstorm.debug" ? "mdi mdi-bug" : "mdi mdi-play-circle");
@@ -197,11 +153,15 @@ function updateAllKeys() {
       drawKey(sn, info, { icon, title: label });
     }
 
-    // Test button — same pattern
+    // Test button
     if (info.cid === "com.larvey.webstorm.test") {
+      if (!connected) {
+        drawKey(sn, info, { bgColor: "#1a1a1a", showIcon: true, showTitle: true, title: "Waiting for IDE" });
+        continue;
+      }
       const configName = info.data?.configName || "";
       const isRunning  = configName
-        ? (cachedStatus?.runningConfigs ?? []).includes(configName)
+        ? (cachedStatus.runningConfigs ?? []).includes(configName)
         : false;
 
       const icon  = isRunning ? "mdi mdi-restart" : "mdi mdi-test-tube";
@@ -210,15 +170,20 @@ function updateAllKeys() {
       drawKey(sn, info, { icon, title: label });
     }
 
-    // Stop button — bright red when anything is running
+    // Stop button — bright red when anything is running, dark when idle, grey when disconnected
     if (info.cid === "com.larvey.webstorm.stop") {
-      const isRunning = cachedStatus?.running ?? false;
-      drawKey(sn, info, { bgColor: isRunning ? "#e53935" : "#4a1010" });
+      const bgColor = !connected ? "#1a1a1a" : (cachedStatus.running ? "#e53935" : "#4a1010");
+      drawKey(sn, info, { bgColor });
     }
 
-    // Branch key
+    // Build button — grey when disconnected
+    if (info.cid === "com.larvey.webstorm.build") {
+      if (!connected) drawKey(sn, info, { bgColor: "#1a1a1a" });
+    }
+
+    // Branch key — always draws from cachedBranch (updated by poll or git fallback)
     if (info.cid === "com.larvey.webstorm.branch") {
-      const branch = cachedStatus?.branch || "no branch";
+      const branch = cachedBranch || "no branch";
       drawKey(sn, info, { showIcon: true, showTitle: true, title: `  ${branch}` });
     }
   }
@@ -245,14 +210,8 @@ function getGitBranch(projectPath) {
 
 async function refreshBranchFallback() {
   const branch = await getGitBranch(pluginConfig.projectPath || null);
-  for (const info of Object.values(liveKeys)) {
-    if (info.cid === "com.larvey.webstorm.branch") {
-      drawKey(info.serialNumber, info, {
-        showIcon: true, showTitle: true,
-        title: branch ? `  ${branch}` : "no branch",
-      });
-    }
-  }
+  if (branch) cachedBranch = branch;
+  updateAllKeys();
 }
 
 // ---------------------------------------------------------------------------
@@ -261,8 +220,8 @@ async function refreshBranchFallback() {
 
 plugin.on("plugin.config.updated", async (payload) => {
   pluginConfig = payload.config || {};
-  const alive = await isWebStormPluginRunning();
-  alive ? pollStatus() : refreshBranchFallback();
+  await pollStatus();
+  if (!cachedStatus) await refreshBranchFallback();
 });
 
 plugin.on("plugin.alive", async (payload) => {
@@ -270,8 +229,8 @@ plugin.on("plugin.alive", async (payload) => {
   logger.info("Alive:", serialNumber, keys.map((k) => k.cid));
   for (const key of keys) liveKeys[key.uid] = { ...key, serialNumber };
 
-  const alive = await isWebStormPluginRunning();
-  alive ? await pollStatus() : await refreshBranchFallback();
+  await pollStatus();
+  if (!cachedStatus) await refreshBranchFallback();
 });
 
 plugin.on("plugin.dead", (payload) => {
@@ -283,8 +242,8 @@ plugin.on("plugin.data", async (payload) => {
   const { key } = data;
 
   if (key.cid === "com.larvey.webstorm.branch") {
-    const alive = await isWebStormPluginRunning();
-    alive ? await pollStatus() : await refreshBranchFallback();
+    await pollStatus();
+    if (!cachedStatus) await refreshBranchFallback();
     return;
   }
 
@@ -293,7 +252,8 @@ plugin.on("plugin.data", async (payload) => {
     return;
   }
 
-  // Stop / Build — straight through
+  // Stop / Build — do nothing if companion plugin isn't running
+  if (!cachedStatus) return;
   await triggerAction(key.cid, key.data);
   setTimeout(pollStatus, 1500);
 });
@@ -301,8 +261,7 @@ plugin.on("plugin.data", async (payload) => {
 plugin.on("system.actwin", async (payload) => {
   const name = payload?.newWin?.owner?.name ?? "";
   if (name.toLowerCase().includes("webstorm")) {
-    const alive = await isWebStormPluginRunning();
-    if (alive) await pollStatus();
+    await pollStatus();
   }
 });
 
