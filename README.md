@@ -57,7 +57,7 @@ Run, Debug, and Test keys show the selected configuration name as their label an
 
 ### 1. Install the IDE companion plugin
 
-Download `webstorm-flexbar-plugin-*.zip` from the [latest release](../../releases/latest) and install it in your JetBrains IDE:
+Download `jetbrains-flexbar-plugin-*.zip` from the [latest release](../../releases/latest) and install it in your JetBrains IDE:
 
 > **Settings → Plugins → ⚙ gear icon → Install Plugin from Disk…**
 
@@ -101,7 +101,7 @@ cd webstorm-plugin
 ./gradlew buildPlugin
 
 # Output
-build/distributions/webstorm-flexbar-plugin-1.0.0.zip
+build/distributions/jetbrains-flexbar-plugin-1.0.0.zip
 ```
 
 Install the zip via **Settings → Plugins → ⚙ → Install Plugin from Disk**.
