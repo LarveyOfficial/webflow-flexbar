@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.larvey.flexbar</id>
     <name>FlexBar Integration</name>
-    <vendor>Luis</vendor>
+    <vendor>Larvey</vendor>
     <description>
         Exposes a local HTTP server on localhost:7123 so the FlexBar hardware
         can directly control WebStorm: run, debug, stop, build, and display the
