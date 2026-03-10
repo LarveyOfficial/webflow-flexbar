@@ -28,16 +28,16 @@ jobs:
 
       - name: Package .flexplugin
         run: |
-          cd com.larvey.webstorm.plugin
-          zip -r ../com.larvey.webstorm.flexplugin .
+          cd com.larvey.jetbrains.plugin
+          zip -r ../com.larvey.jetbrains.flexplugin .
 
       - uses: actions/upload-artifact@v4
         with:
           name: flexbar-plugin
-          path: com.larvey.webstorm.flexplugin
+          path: com.larvey.jetbrains.flexplugin
 
-  build-webstorm-plugin:
-    name: Build WebStorm companion plugin
+  build-ide-plugin:
+    name: Build IDE companion plugin
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,16 +53,16 @@ jobs:
 
       - name: Build plugin
         run: ./gradlew buildPlugin -PwsVersion=2025.3 --no-configuration-cache
-        working-directory: webstorm-plugin
+        working-directory: jetbrains-plugin
 
       - uses: actions/upload-artifact@v4
         with:
-          name: webstorm-plugin
-          path: webstorm-plugin/build/distributions/*.zip
+          name: ide-plugin
+          path: jetbrains-plugin/build/distributions/*.zip
 
   release:
     name: Create GitHub Release
-    needs: [build-flexbar-plugin, build-webstorm-plugin]
+    needs: [build-flexbar-plugin, build-ide-plugin]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     permissions:
@@ -74,7 +74,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: webstorm-plugin
+          name: ide-plugin
 
       - name: Create release
         uses: softprops/action-gh-release@v2
@@ -82,5 +82,5 @@ jobs:
           generate_release_notes: true
           prerelease: ${{ !startsWith(github.ref_name, 'v') }}
           files: |
-            com.larvey.webstorm.flexplugin
+            com.larvey.jetbrains.flexplugin
             *.zip
