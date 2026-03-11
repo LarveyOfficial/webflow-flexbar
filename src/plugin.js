@@ -33,16 +33,23 @@ function activePorts() {
 
 function callIDE(path, method = "POST", port = DEFAULT_PORT) {
   return new Promise((resolve) => {
+    let settled = false;
+    const done = (v) => { if (!settled) { settled = true; clearTimeout(timer); resolve(v); } };
+
+    // Use a real setTimeout (not socket timeout) — socket timeouts pause during system sleep,
+    // but setTimeout fires immediately after wake if its deadline already passed.
+    // agent:false forces a fresh TCP connection each time, avoiding dead keep-alive sockets.
+    const timer = setTimeout(() => { req.destroy(); done(null); }, 3000);
+
     const req = http.request(
-      { hostname: "127.0.0.1", port, path, method, headers: { "Content-Length": "0" } },
+      { hostname: "127.0.0.1", port, path, method, headers: { "Content-Length": "0" }, agent: false },
       (res) => {
         let body = "";
         res.on("data", (c) => (body += c));
-        res.on("end", () => { try { resolve(JSON.parse(body)); } catch { resolve(null); } });
+        res.on("end", () => { try { done(JSON.parse(body)); } catch { done(null); } });
       }
     );
-    req.setTimeout(2500, () => { req.destroy(); resolve(null); });
-    req.on("error", () => resolve(null));
+    req.on("error", () => done(null));
     req.end();
   });
 }
@@ -87,7 +94,7 @@ const ACTION_CIDS = new Set(["com.larvey.jetbrains.run", "com.larvey.jetbrains.d
 async function handleActionTap(cid, key) {
   const port = keyPort(key);
   const { status } = getPortState(port);
-  if (!status) return; // companion plugin not running — do nothing
+  if (!status) { pollPort(port).then(updateAllKeys); return; }
 
   const uid = key.uid;
   const configName = key.data?.configName || null;
@@ -303,8 +310,8 @@ plugin.on("plugin.data", async (payload) => {
     return;
   }
 
-  // Stop / Build — do nothing if companion plugin isn't running on this port
-  if (!getPortState(port).status) return;
+  // Stop / Build — poll if companion plugin isn't running on this port
+  if (!getPortState(port).status) { pollPort(port).then(updateAllKeys); return; }
   await triggerAction(key.cid, key);
   setTimeout(() => pollPort(port).then(updateAllKeys), 1500);
 });
@@ -322,4 +329,14 @@ plugin.on("system.actwin", async (payload) => {
 
 plugin.start();
 
-setInterval(pollAllPorts, 10_000);
+let lastPollTime = Date.now();
+setInterval(() => {
+  const now = Date.now();
+  // If more than 20s elapsed the system was likely asleep — clear stale state immediately
+  if (now - lastPollTime > 20_000) {
+    for (const ps of Object.values(portState)) ps.status = null;
+    updateAllKeys();
+  }
+  lastPollTime = now;
+  pollAllPorts();
+}, 10_000);

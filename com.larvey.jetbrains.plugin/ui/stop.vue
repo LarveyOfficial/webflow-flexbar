@@ -20,16 +20,17 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col v-if="!serverAvailable && !loading" cols="12">
-        <v-alert type="warning" density="compact" variant="tonal" class="mt-2">
-          IDE companion plugin not reachable on port {{ modelValue.data.port || 7123 }}.
-        </v-alert>
-      </v-col>
-
-      <v-col v-if="serverAvailable && !loading" cols="12">
-        <v-alert type="success" density="compact" variant="tonal" class="mt-2">
-          Connected on port {{ modelValue.data.port || 7123 }}.
+    <v-row v-if="checked && !loading">
+      <v-col cols="12">
+        <v-alert
+          :type="serverAvailable ? 'success' : 'warning'"
+          density="compact"
+          variant="tonal"
+          class="mt-2"
+        >
+          {{ serverAvailable
+            ? `Connected to ${ideName || 'IDE'} on port ${modelValue.data.port || 7123}`
+            : `No IDE companion found on port ${modelValue.data.port || 7123}` }}
         </v-alert>
       </v-col>
     </v-row>
@@ -46,13 +47,20 @@ export default {
   data() {
     return {
       loading: false,
+      checked: false,
       serverAvailable: false,
+      ideName: "",
     };
   },
 
-  async mounted() {
+  watch: {
+    "modelValue.data.port"() {
+      this.checked = false;
+    },
+  },
+
+  mounted() {
     if (!this.modelValue.data.port) this.modelValue.data.port = 7123;
-    await this.checkAndReload();
   },
 
   methods: {
@@ -63,9 +71,11 @@ export default {
         const res = await fetch(`http://127.0.0.1:${port}/ping`);
         const data = await res.json();
         this.serverAvailable = data?.ok === true;
+        this.ideName = data?.ide || "";
       } catch {
         this.serverAvailable = false;
       } finally {
+        this.checked = true;
         this.loading = false;
       }
     },
