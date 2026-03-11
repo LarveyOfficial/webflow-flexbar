@@ -1,5 +1,6 @@
 package com.larvey.flexbar
 
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.diagnostic.Logger
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
@@ -33,7 +34,7 @@ object FlexBarServer {
                 createContext("/status")       { ex -> handleGet(ex) { ActionExecutor.status() } }
                 createContext("/configs")      { ex -> handleGet(ex) { ActionExecutor.configs() } }
                 createContext("/test-configs") { ex -> handleGet(ex) { ActionExecutor.testConfigs() } }
-                createContext("/ping")         { ex -> respond(ex, 200, mapOf("ok" to true, "port" to port)) }
+                createContext("/ping")         { ex -> respond(ex, 200, mapOf("ok" to true, "port" to port, "ide" to ApplicationInfo.getInstance().versionName)) }
 
                 executor = Executors.newCachedThreadPool()
                 start()
