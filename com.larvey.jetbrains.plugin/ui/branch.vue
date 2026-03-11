@@ -28,9 +28,7 @@
           variant="tonal"
           class="mt-2"
         >
-          {{ serverAvailable
-            ? `Connected to ${ideName || 'IDE'} on port ${modelValue.data.port || 7123}`
-            : `No IDE companion found on port ${modelValue.data.port || 7123}` }}
+          {{ statusMessage }}
         </v-alert>
       </v-col>
     </v-row>
@@ -49,7 +47,7 @@ export default {
       loading: false,
       checked: false,
       serverAvailable: false,
-      ideName: "",
+      statusMessage: "",
     };
   },
 
@@ -71,9 +69,13 @@ export default {
         const res = await fetch(`http://127.0.0.1:${port}/ping`);
         const data = await res.json();
         this.serverAvailable = data?.ok === true;
-        this.ideName = data?.ide || "";
+        const ide = data?.ide || "IDE";
+        this.statusMessage = this.serverAvailable
+          ? `Connected to ${ide} on port ${port}`
+          : `No IDE companion found on port ${port}`;
       } catch {
         this.serverAvailable = false;
+        this.statusMessage = `No IDE companion found on port ${port}`;
       } finally {
         this.checked = true;
         this.loading = false;
