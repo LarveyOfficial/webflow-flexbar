@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row align="center">
+    <v-row align="center" class="mb-1">
       <v-col cols="8">
         <v-text-field
           v-model.number="modelValue.data.port"
@@ -14,23 +14,22 @@
         />
       </v-col>
       <v-col cols="4">
-        <v-btn block variant="tonal" :loading="loading" @click="checkConnection">
+        <v-btn block variant="tonal" :loading="loading" @click="checkAndReload">
           Check
         </v-btn>
       </v-col>
     </v-row>
 
-    <v-row v-if="!loading">
-      <v-col cols="12">
-        <v-alert
-          :type="serverAvailable ? 'success' : 'warning'"
-          density="compact"
-          variant="tonal"
-          class="mt-2"
-        >
-          {{ serverAvailable
-            ? `Connected on port ${modelValue.data.port || 7123}`
-            : `IDE companion not reachable on port ${modelValue.data.port || 7123}` }}
+    <v-row>
+      <v-col v-if="!serverAvailable && !loading" cols="12">
+        <v-alert type="warning" density="compact" variant="tonal" class="mt-2">
+          IDE companion plugin not reachable on port {{ modelValue.data.port || 7123 }}.
+        </v-alert>
+      </v-col>
+
+      <v-col v-if="serverAvailable && !loading" cols="12">
+        <v-alert type="success" density="compact" variant="tonal" class="mt-2">
+          Connected on port {{ modelValue.data.port || 7123 }}.
         </v-alert>
       </v-col>
     </v-row>
@@ -45,20 +44,19 @@ export default {
   emits: ["update:modelValue"],
 
   data() {
-    return { loading: false, serverAvailable: false };
-  },
-
-  created() {
-    if (!this.modelValue.data) this.modelValue.data = {};
-    if (!this.modelValue.data.port) this.modelValue.data.port = 7123;
+    return {
+      loading: false,
+      serverAvailable: false,
+    };
   },
 
   async mounted() {
-    await this.checkConnection();
+    if (!this.modelValue.data.port) this.modelValue.data.port = 7123;
+    await this.checkAndReload();
   },
 
   methods: {
-    async checkConnection() {
+    async checkAndReload() {
       this.loading = true;
       const port = this.modelValue.data.port || 7123;
       try {
